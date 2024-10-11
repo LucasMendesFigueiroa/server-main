@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Estado {
+  id    Int    @id @default(autoincrement())
+  nome  String
+  sigla String @unique
+
+  created_at DateTime @default(now())
+  update_at  DateTime @default(now())
+
+  Cidade Cidade[]
+
+  @@map("estados")
+}
+
+model Cidade {
+  id        Int    @id @default(autoincrement())
+  nome      String
+  estado_id Int
+  estado    Estado @relation(fields: [estado_id], references: [id])
+
+  created_at DateTime @default(now())
+  update_at  DateTime @updatedAt
+
+  LocalColeta LocalColeta[]
+  Pessoa      Pessoa[]
+
+  @@map("cidades")
+}
+
+model LocalColeta {
+  id          Int     @id @default(autoincrement())
+  nome        String
+  rua         String
+  numero      String
+  complemento String?
+  cidadeId    Int
+  cidade      Cidade  @relation(fields: [cidadeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Doacoes Doacao[]
+
+  @@map("locais_coleta")
+}
+
+model Doacao {
+  id        Int      @id @default(autoincrement())
+  pessoaId  Int
+  localId   Int
+  data      DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pessoa Pessoa      @relation(fields: [pessoaId], references: [id])
+  local  LocalColeta @relation(fields: [localId], references: [id])
+
+  @@map("doacoes")
+}
+
+model Pessoa {
+  id          Int      @id @default(autoincrement())
+  nome        String
+  rua         String
+  numero      String
+  complemento String?
+  rg          String
+  cidadeId    Int
+  tipoId      Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cidade  Cidade        @relation(fields: [cidadeId], references: [id])
+  tipo    TipoSanguineo @relation(fields: [tipoId], references: [id])
+  Doacoes Doacao[]
+
+  @@map("pessoas")
+}
+
+model TipoSanguineo {
+  id        Int      @id @default(autoincrement())
+  tipo      String
+  fator     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Pessoa Pessoa[]
+
+  @@map("tipos_sanguineos")
+}
